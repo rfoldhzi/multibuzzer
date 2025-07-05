@@ -13,12 +13,6 @@ function incorrectPlayer(G) {
   let fastestPlayer = sortBy(values(G.queue), ['timestamp'])[0];
   G.incorrect[fastestPlayer.id] = true
   G.queue = {};
-  const players = !G.gameMetadata
-    ? []
-    : game.gameMetadata
-      .filter((p) => p.name)
-      .map((p) => ({ ...p, id: String(p.id) }));
-  console.log("players", players)
 }
 
 function changeTeam(G, ctx, id) {
@@ -30,6 +24,7 @@ function changeTeam(G, ctx, id) {
     i = (i + 1) % teams.length
     G.teams[id] = teams[i]
   }
+
 }
 
 function resetBuzzer(G, ctx, id) {
