@@ -91,7 +91,7 @@ export default function Table(game) {
     return () => window.removeEventListener('keydown', onKeydown);
   }, []);
 
-  const players = !game.gameMetadata
+  let players = !game.gameMetadata
     ? []
     : game.gameMetadata
       .filter((p) => p.name)
@@ -103,6 +103,9 @@ export default function Table(game) {
       '0'
     ) || null;
   const isHost = get(firstPlayer, 'id') === game.playerID;
+  const isPlayer = players.find((p) => p.id == game.playerID).name[0] != "*"
+  players = players.filter((p) => p.name[0] != "*")
+
 
   const queue = sortBy(values(game.G.queue), ['timestamp']);
   const buzzedPlayers = queue
@@ -162,7 +165,7 @@ export default function Table(game) {
           {!game.isConnected ? (
             <p className="warning">Disconnected - attempting to reconnect...</p>
           ) : null}
-          <div id="buzzer">
+          {isPlayer ? <div id="buzzer">
             <button
               ref={buzzButton}
               disabled={buzzed || game.G.locked || incorrect}
@@ -174,7 +177,7 @@ export default function Table(game) {
             >
               {game.G.locked ? 'Locked' : incorrect ? "Incorrect" : buzzed ? 'Buzzed' : 'Buzz'}
             </button>
-          </div>
+          </div> : null}
           {isHost ? (
             <div className="settings">
               <div className="button-container">
