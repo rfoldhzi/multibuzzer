@@ -239,7 +239,13 @@ export default function Table(game) {
           <ul>
             {activePlayers.map(({ id, name, connected }) => (
               <li key={id}>
-                <div className={`name ${!connected ? 'dim' : ''}`}>
+                <div className={`name ${!connected ? 'dim' : ''} ${game.G.teams[id]}`}
+                  onClick={() => {
+                    if (isHost) {
+                      game.moves.changeTeam(id);
+                    }
+                  }}
+                >
                   {name}
                   {!connected ? (
                     <AiOutlineDisconnect className="disconnected" />
@@ -256,7 +262,7 @@ export default function Table(game) {
           <ul>
             {incorrectPlayers.map(({ id, name, connected }) => (
               <li key={id}>
-                <div className={`name ${!connected ? 'dim' : ''}`}>
+                <div className={`name incorrect ${!connected ? 'dim' : ''}`}>
                   {name}
                   {!connected ? (
                     <AiOutlineDisconnect className="disconnected" />

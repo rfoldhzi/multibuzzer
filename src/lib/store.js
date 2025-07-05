@@ -9,9 +9,27 @@ function resetBuzzers(G) {
 
 function incorrectPlayer(G) {
   console.log("help", G.queue)
+  console.log("hel2p", G)
   let fastestPlayer = sortBy(values(G.queue), ['timestamp'])[0];
   G.incorrect[fastestPlayer.id] = true
   G.queue = {};
+  const players = !G.gameMetadata
+    ? []
+    : game.gameMetadata
+      .filter((p) => p.name)
+      .map((p) => ({ ...p, id: String(p.id) }));
+  console.log("players", players)
+}
+
+function changeTeam(G, ctx, id) {
+  let teams = ["Red", "Blue", "Green", "White"]
+  if (!G.teams[id]) {
+    G.teams[id] = teams[0]
+  } else {
+    let i = teams.indexOf(G.teams[id])
+    i = (i + 1) % teams.length
+    G.teams[id] = teams[i]
+  }
 }
 
 function resetBuzzer(G, ctx, id) {
@@ -39,11 +57,11 @@ export const Buzzer = {
   name: 'buzzer',
   minPlayers: 2,
   maxPlayers: 200,
-  setup: () => ({ queue: {}, locked: false, incorrect: {} }),
+  setup: () => ({ queue: {}, locked: false, incorrect: {}, teams: {} }),
   phases: {
     play: {
       start: true,
-      moves: { buzz, resetBuzzer, resetBuzzers, toggleLock, incorrectPlayer },
+      moves: { buzz, resetBuzzer, resetBuzzers, toggleLock, incorrectPlayer, changeTeam },
       turn: {
         activePlayers: ActivePlayers.ALL,
       },
