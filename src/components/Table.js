@@ -10,6 +10,7 @@ export default function Table(game) {
   const [buzzed, setBuzzer] = useState(
     some(game.G.queue, (o) => o.id === game.playerID)
   );
+  const [incorrect, setIncorrect] = useState(game.G.incorrect[game.playerID]);
   const [lastBuzz, setLastBuzz] = useState(null);
   const [sound, setSound] = useState(false);
   const [soundPlayed, setSoundPlayed] = useState(false);
@@ -48,6 +49,11 @@ export default function Table(game) {
         // immediate reset, if it's been awhile
         setBuzzer(false);
       }
+    }
+    if (game.G.incorrect[game.playerID]) {
+      setIncorrect(true)
+    } else {
+      setIncorrect(false)
     }
 
     // reset ability to play sound if there is no pending buzzer
@@ -88,8 +94,8 @@ export default function Table(game) {
   const players = !game.gameMetadata
     ? []
     : game.gameMetadata
-        .filter((p) => p.name)
-        .map((p) => ({ ...p, id: String(p.id) }));
+      .filter((p) => p.name)
+      .map((p) => ({ ...p, id: String(p.id) }));
   // host is lowest active user
   const firstPlayer =
     get(
@@ -111,13 +117,23 @@ export default function Table(game) {
         connected: player.connected,
       };
     })
-    .filter((p) => p.name);
+    .filter((p) => p.name)
+    .filter((p) => !game.G.incorrect[p.id]); // remove incorrect players
   // active players who haven't buzzed
   const activePlayers = orderBy(
-    players.filter((p) => !some(queue, (q) => q.id === p.id)),
+    players.filter((p) => !some(queue, (q) => q.id === p.id) && !game.G.incorrect[p.id]),
     ['connected', 'name'],
     ['desc', 'asc']
   );
+
+  const incorrectPlayers = Object.keys(game.G.incorrect)
+    .map((id) => {
+      const player = players.find((player) => player.id === id);
+      if (!player) {
+        return {};
+      }
+      return player
+    })
 
   const timeDisplay = (delta) => {
     if (delta > 1000) {
@@ -149,14 +165,14 @@ export default function Table(game) {
           <div id="buzzer">
             <button
               ref={buzzButton}
-              disabled={buzzed || game.G.locked}
+              disabled={buzzed || game.G.locked || incorrect}
               onClick={() => {
                 if (!buzzed && !game.G.locked) {
                   attemptBuzz();
                 }
               }}
             >
-              {game.G.locked ? 'Locked' : buzzed ? 'Buzzed' : 'Buzz'}
+              {game.G.locked ? 'Locked' : incorrect ? "Incorrect" : buzzed ? 'Buzzed' : 'Buzz'}
             </button>
           </div>
           {isHost ? (
@@ -171,10 +187,16 @@ export default function Table(game) {
               </div>
               <div className="button-container">
                 <button
-                  disabled={isEmpty(game.G.queue)}
+                  disabled={isEmpty(game.G.queue) && isEmpty(game.G.incorrect)}
                   onClick={() => game.moves.resetBuzzers()}
                 >
                   Reset all buzzers
+                </button>
+                <button
+                  disabled={isEmpty(game.G.queue)}
+                  onClick={() => game.moves.incorrectPlayer()}
+                >
+                  1st Player Incorrect
                 </button>
               </div>
               <div className="divider" />
@@ -216,6 +238,23 @@ export default function Table(game) {
           <p>Other Players</p>
           <ul>
             {activePlayers.map(({ id, name, connected }) => (
+              <li key={id}>
+                <div className={`name ${!connected ? 'dim' : ''}`}>
+                  {name}
+                  {!connected ? (
+                    <AiOutlineDisconnect className="disconnected" />
+                  ) : (
+                    ''
+                  )}
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="queue">
+          <p>Incorrect Players</p>
+          <ul>
+            {incorrectPlayers.map(({ id, name, connected }) => (
               <li key={id}>
                 <div className={`name ${!connected ? 'dim' : ''}`}>
                   {name}
