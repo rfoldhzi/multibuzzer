@@ -4,16 +4,16 @@ import { Buzzer } from '../lib/store';
 axios.defaults.headers['Content-Type'] = 'application/json';
 axios.defaults.headers['Accept'] = 'application/json';
 
-const hostname = window.location.hostname;
+const hostname = 'multibuzzer.us-east-2.elasticbeanstalk.com/'//window.location.hostname;
 const port = window.location.port;
 const protocol = window.location.protocol;
 const gameport = process.env.PORT || 4001;
 const url = protocol + '//' + hostname + (port ? ':' + port : '');
 const localUrl = `${protocol}//${hostname}:${gameport}`;
 
-const LOBBY_SERVER = process.env.NODE_ENV === 'production' ? url : localUrl;
-export const GAME_SERVER =
-  process.env.NODE_ENV === 'production' ? url : localUrl;
+const LOBBY_SERVER = 'http://multibuzzer.us-east-2.elasticbeanstalk.com'//process.env.NODE_ENV === 'production' ? url : localUrl;
+export const GAME_SERVER = 'http://multibuzzer.us-east-2.elasticbeanstalk.com'
+//process.env.NODE_ENV === 'production' ? url : localUrl;
 
 export async function getRoom(roomId) {
   // convert to uppercase
